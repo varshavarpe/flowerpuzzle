@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <style>
+        img {
+            margin: 1px;
+            margin-right: -1.5px;
+            margin-left: -1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <h1>FLOWER PUZZLE</h1>
+                <hr />
+            </div>
+            <div class="col-lg-5">
+                <div class="row">
+                    <div class="col-12">
+                        <div style="width:340px;padding: 1px;">
+                            <div style="width: 100%;">
+                                <img id="img1"  onclick="touch(this)" src="pictures/1.jpg" style="width: 100px;height: auto;" />
+                                <img id="img2" onclick="touch(this)" src="pictures/2.jpg" style="width: 100px;height: auto;" />
+                                <img id="img3" onclick="touch(this)" src="pictures/3.jpg" style="width: 100px;height: auto;" />
+                            </div>
+                            <div style="width: 100%;">
+                                <img id="img4" onclick="touch(this)" src="pictures/4.jpg" style="width: 100px;height: auto;" />
+                                <img id="img5" onclick="touch(this)" src="pictures/5.jpg" style="width: 100px;height: auto;" />
+                                <img id="img6"  onclick="touch(this)" src="pictures/6.jpg" style="width: 100px;height: auto;" />
+                            </div>
+                            <div style="width: 100%;">
+                                <img id="img7"  onclick="touch(this)" src="pictures/7.jpg" style="width: 100px;height: auto;" />
+                                <img id="img8" onclick="touch(this)" src="pictures/8.jpg" style="width: 100px;height: auto;" />
+                                <img id="img9"  onclick="touch(this)"src="pictures/9.jpg" style="width: 100px;height: auto;" />
+                            </div>
+                            <div style="width: 100%;">
+                                <img id="img10" onclick="touch(this)" src="pictures/10.jpg" style="width: 100px;height: auto;" />
+                                <img id="img11" onclick="touch(this)" src="pictures/11.jpg" style="width: 100px;height: auto;" />
+                                <img id="img12" onclick="touch(this)" src="pictures/12.jpg" style="width: 100px;height: auto;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div style="width: 100%;">
+                    <table style="width:200px;">
+                        <tr style="width:100%;">
+                            <td colspan="2" style="text-align: center;">
+                                <img src="pictures/arrows/top.png" onclick="shift('top')" style="height:50px;" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="pictures/arrows/left.png" onclick="shift('left')"  style="height:50px;" />
+                            </td>
+                            <td style="text-align: right;">
+                                <img src="pictures/arrows/right.png" onclick="shift('right')"  style="height:50px;" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="text-align: center;">
+                                <img src="pictures/arrows/bottom.png" onclick="shift('bottom')"  style="height:50px;" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="text-align: center;">
+                                <br />
+                                <button id="btnstart" onclick="startpuzzle()"  class="btn btn-danger me-2">Start</button>
+                                <button onclick="stoppuzzle()" class="btn btn-secondary">Stop</button>
+                                <br />
+                                <b><label id="timespent"></label></b>
+                                <br />
+                               <b> <label id="movecount"></label></b>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <img src="flower.jpg" />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isrunning = false;
+        let timespent = 0;
+        let movecount = 0;
+        let images = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        let blankimage = "12.jpg";
+        let nodes = [
+                        [0, 2, 4, 0],
+                        [0, 3, 5, 1],
+                        [0, 0, 6, 2],
+
+                        [1, 5, 7, 0],
+                        [2, 6, 8, 4],
+                        [3, 0, 9, 5],
+
+                        [4, 8, 10, 0],
+                        [5, 9, 11, 7],
+                        [6, 0, 12, 8],
+
+                        [7, 11, 0, 0],
+                        [8, 12, 0, 10],
+                        [9, 0, 0, 11]
+                    ];
+
+        function assignimages() {
+            for (let i = 1; i <= 12; i++) {
+                let img = document.getElementById("img" + i);
+                img.src = "pictures/" + images[i - 1] + ".jpg";
+            }
+        }
+
+        function shift(where)
+        {
+            let blanknode = 0;
+            let withnode = 0;
+            for (let i = 1; i <= 12; i++) {
+                let img = document.getElementById("img" + i);
+                let src = img.src;
+                let paths = src.split("/");
+                let imgpath = paths[paths.length - 1];
+                if(imgpath == blankimage)
+                {
+                    blanknode = i;
+                    break;
+                }
+            }
+            if(where == "top")
+                withnode = nodes[blanknode - 1][0];
+            else if(where == "right")
+                withnode = nodes[blanknode - 1][1];
+            else if(where == "bottom")
+                withnode = nodes[blanknode - 1][2];
+            else
+                withnode = nodes[blanknode - 1][3];
+            
+            if(isrunning){
+                if(withnode != 0){
+                    let blankpath = document.getElementById("img" + blanknode).src;
+                    document.getElementById("img" + blanknode).src = document.getElementById("img" + withnode).src;
+                    document.getElementById("img" + withnode).src = blankpath;
+                    movecount++;
+                    document.getElementById("movecount").innerHTML = "Move Count: " + movecount;
+                }
+                verification();
+            }
+            
+        }
+
+        function verification()
+        {
+            let verified = true;
+            for (let i = 1; i <= 12; i++) {
+                let img = document.getElementById("img" + i);
+                let src = img.src;
+                let paths = src.split("/");
+                let imgno = Number(paths[paths.length - 1].replace(".jpg", ""));
+                if(imgno != i){
+                    verified = false;
+                    break;
+                }                
+            }
+            if(verified)
+            {
+                alert("Success");
+            }
+        }
+
+        function touch(ctrl)
+        {
+            let myid = Number(ctrl.id.replace("img", ""));
+            let blanknode = 0;
+            for (let i = 1; i <= 12; i++) {
+                let img = document.getElementById("img" + i);
+                let src = img.src;
+                let paths = src.split("/");
+                let imgpath = paths[paths.length - 1];
+                if(imgpath == blankimage)
+                {
+                    blanknode = i;
+                    break;
+                }
+            }
+            if(nodes[myid - 1][0] == blanknode)
+                shift("bottom");
+            else if(nodes[myid - 1][1] == blanknode)
+                shift("left");
+            else if(nodes[myid - 1][2] == blanknode)
+                shift("top");
+            else if(nodes[myid - 1][3] == blanknode)
+                shift("right");
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            // While there remain elements to shuffle...
+            while (currentIndex != 0) {
+
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                // And swap it with the current element.
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]];
+            }
+
+            return array;
+        }
+
+
+        function startpuzzle()
+        {      
+            let text = document.getElementById("btnstart").innerText;
+            if(text == "Start"){
+                images = shuffle(images);
+                assignimages();
+                timespent = 0;
+                movecount = 0;
+                isrunning = true;
+                document.getElementById("btnstart").innerText = "Pause";
+            }
+            else if(text == "Pause")
+            {
+                isrunning = false;
+                document.getElementById("btnstart").innerText = "Resume";
+            }
+            else if(text == "Resume")
+            {
+                isrunning = true;
+                document.getElementById("btnstart").innerText = "Pause";
+            }
+        }
+
+        function stoppuzzle(){
+            isrunning = false;
+            document.getElementById("btnstart").innerText = "Start";
+        }
+
+        setInterval(()=>{
+            if(isrunning){
+                timespent++;
+                var date = new Date(0);
+                date.setSeconds(timespent); // specify value for SECONDS here
+                var timeString = date.toISOString().substr(11, 8);
+                document.getElementById("timespent").innerHTML = "Time Spent: " + timeString;
+            }
+        }, 1000);
+         
+        document.onkeydown = function(){
+            if(event.keyCode == 37)
+                shift("left");
+            else if(event.keyCode == 38)
+                shift("top");
+            else if(event.keyCode == 39)
+                shift("right");
+            else if(event.keyCode == 40)
+                shift("bottom");
+        }
+    </script>
+    </body>
+
+</html>
+
